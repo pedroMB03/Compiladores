@@ -1,1 +1,149 @@
+%{
+#include <stdio.h>
+#include "y.tab.h"
 
+%}
+
+%token ID ID_NUM ID_DEC TEXT
+
+%%
+
+prog: declr*
+    ;
+    
+delcr: declrVar
+    | declrFunc
+    | declrStruct
+    | comentario
+    ;
+    
+declrVar: tipo ID';'
+    | tipo ID'='expr';'
+    ;
+    
+tipo: ID
+    | FLOAT
+    | DOUBLE
+    | CHAR
+    | BOOLEAN
+    ;
+    
+declr func: tipo ID'(' parametros ')' bloco
+    ;
+    
+parametros: parametro ',' parametros
+    | parametro
+    | /*empty*/
+    ;
+    
+parametro: tipo ID
+    | tipo ID'['']'
+    | tipo ELLIPSIS ID
+    ;
+    
+bloco: '{'declr*'}'
+    ;
+    
+comentario: COMENTARIO
+    ;
+    
+expr: atribuicao
+    ;
+
+atribuicao: ID'='expr
+    | ID ADD_ASSIGN expr
+    | ID SUB_ASSIGN expr
+    | ID MUL_ASSIGN expr
+    | ID DIV_ASSIGN expr
+    | ID MOD_ASSIGN expr
+    | ID AND_ASSIGN expr
+    | ID OR_ASSIGN expr
+    | ID '=' ID
+    | ID ADD_ASSIGN ID
+    | ID SUB_ASSIGN ID
+    | ID MUL_ASSIGN ID
+    | ID DIV_ASSIGN ID
+    | ID MOD_ASSIGN ID
+    | ID AND_ASSIGN ID
+    | ID OR_ASSIGN ID
+    ;
+    
+estruturaControle: IF '(' expr ')' bloco
+    | IF '(' expr ')' bloco ELSE bloco
+    | WHILE '(' expr ')' bloco
+    | FOR '(' expr ';' expr ';' expr ')' bloco
+    | SWITCH '(' expr ')' caseLista
+    | BREAK ';'
+    | CONTINUE ';'
+    | RETURN expr ';'
+    ;
+    
+caseLista: CASE expr ':' bloco
+    | DEFAULT ':' bloco
+    | caseLista CASE expr ':' bloco
+    | caseLista DEFAULT ':' bloco
+    ;
+
+declStruct: STRUCT ID '{' declrVar* '}' ';'
+    ;
+
+exprArray: ID '[' expr ']'
+    | ID '[' ']'
+    | '{' exprLista '}'
+    ;
+
+exprLista: expr ',' exprLista
+    | expr
+    ;
+
+exprLogica: exprRelacional
+    | exprLogica AND exprRelacional
+    | exprLogica OR exprRelacional
+    | NOT exprRelacional
+    ;
+
+exprRelacional: exprAritmetica
+    | exprAritmetica GT exprAritmetica
+    | exprAritmetica GE exprAritmetica
+    | exprAritmetica LT exprAritmetica
+    | exprAritmetica LE exprAritmetica
+    | exprAritmetica NE exprAritmetica
+    | exprAritmetica EQ exprAritmetica
+    ;
+
+exprAritmetica: exprMultiplicativa
+    | exprAritmetica '+' exprMultiplicativa
+    | exprAritmetica '-' exprMultiplicativa
+    ;
+
+exprMultiplicativa: exprUnaria
+    | exprMultiplicativa '*' exprUnaria
+    | exprMultiplicativa '/' exprUnaria
+    | exprMultiplicativa '%' exprUnaria
+    ;
+
+exprUnaria: exprPostfix
+    | '-' exprUnaria
+    | INCREMENT exprPostfix
+    | DECREMENT exprPostfix
+    ;
+
+exprPostfix: primaria
+    | primaria '[' expr ']'
+    | primaria '(' argumentos ')'
+    | primaria '.' ID
+    | primaria PTR_OP ID
+    ;
+
+argumentos: exprLista
+    | /* empty */
+    ;
+
+primaria: ID
+    | NUM_INT
+    | NUM_DEC
+    | TEXT
+    | '('expr')'
+    ;
+
+%%
